@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafío de Orígenes — Ritmos de mi Tierra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #1a0e05;
+      color: #2c1a08;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .bg-pattern {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: #1a0e05;
+      overflow: hidden;
+    }
+
+    .bg-pattern svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .main-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 620px;
+    }
+
+    .header-banner {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .header-banner .tec-tag {
+      display: inline-block;
+      background: #8B1A1A;
+      color: #f5e6c8;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 99px;
+      margin-bottom: 0.75rem;
+    }
+
+    .header-banner h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #f5e6c8;
+      line-height: 1.2;
+    }
+
+    .card {
+      background: #fdf6e8;
+      border-radius: 20px;
+      border: 2px solid #c8963a;
+      padding: 2rem;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #8B1A1A, #c8963a, #1D6B3A, #c8963a, #8B1A1A);
+    }
+
+    .corner-deco {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      opacity: 0.15;
+    }
+    .corner-deco.tl { top: 8px; left: 8px; }
+    .corner-deco.tr { top: 8px; right: 8px; transform: scaleX(-1); }
+    .corner-deco.bl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+    .corner-deco.br { bottom: 8px; right: 8px; transform: scale(-1,-1); }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .start-hero { text-align: center; padding: 0.5rem 0 1rem; }
+    .folk-icon { font-size: 52px; margin-bottom: 0.75rem; display: block; }
+    .start-hero h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #3d1a00;
+      margin-bottom: 0.5rem;
+    }
+    .start-hero p { font-size: 14px; color: #6b4020; margin-bottom: 1.5rem; line-height: 1.6; }
+
+    .origin-tags { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .origin-tag {
+      display: flex; align-items: center; gap: 6px;
+      background: white;
+      border: 1px solid #e0c080;
+      border-radius: 99px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: #5a3010;
+    }
+    .origin-tag .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .start-btn {
+      background: #8B1A1A;
+      color: #f5e6c8;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 36px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .start-btn:hover { background: #a02020; }
+    .start-btn:active { transform: scale(0.98); }
+
+    .progress-bar { height: 6px; background: #e8d5a0; border-radius: 99px; margin-bottom: 0.75rem; }
+    .progress-fill { height: 6px; background: #8B1A1A; border-radius: 99px; transition: width 0.4s; }
+
+    .timer-wrap { margin-bottom: 1rem; }
+    .timer-bar { height: 5px; border-radius: 99px; transition: width 0.1s linear; }
+
+    .question-num { font-size: 12px; color: #8a6030; margin-bottom: 0.4rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: #2c1200;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 9px; }
+    .opt-btn {
+      background: white;
+      border: 1.5px solid #d4b070;
+      border-radius: 12px;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      color: #2c1200;
+      transition: background 0.15s, border-color 0.15s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .opt-btn .opt-letter {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #f5e8c8;
+      border: 1px solid #d4b070;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: #8B1A1A;
+      flex-shrink: 0;
+    }
+    .opt-btn:hover:not(:disabled) { background: #fdf0d0; border-color: #c8963a; }
+    .opt-btn.correct { background: #d6f0e0; border-color: #1D6B3A; color: #0a3d1e; }
+    .opt-btn.correct .opt-letter { background: #1D6B3A; border-color: #1D6B3A; color: white; }
+    .opt-btn.wrong { background: #fde8e8; border-color: #8B1A1A; color: #4a0a0a; }
+    .opt-btn.wrong .opt-letter { background: #8B1A1A; border-color: #8B1A1A; color: white; }
+    .opt-btn:disabled { cursor: default; }
+
+    .feedback {
+      font-size: 13px;
+      margin-top: 0.875rem;
+      padding: 12px 14px;
+      border-radius: 10px;
+      line-height: 1.6;
+      display: none;
+      border-left: 3px solid transparent;
+    }
+    .feedback.correct { background: #d6f0e0; color: #0a3d1e; border-left-color: #1D6B3A; }
+    .feedback.wrong { background: #fde8e8; color: #4a0a0a; border-left-color: #8B1A1A; }
+
+    .next-btn {
+      margin-top: 1rem;
+      background: #1D6B3A;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .next-btn:hover { background: #256b42; }
+    .next-btn:active { transform: scale(0.98); }
+
+    .score-card {
+      background: #3d1a00;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      border: 1.5px solid #c8963a;
+    }
+    .score-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: #f5c842;
+    }
+    .score-label { font-size: 14px; color: #c8a070; margin-top: 4px; }
+    .score-msg { font-size: 15px; color: #f5e6c8; margin-top: 1rem; line-height: 1.5; }
+
+    .restart-btn {
+      background: #8B1A1A;
+      color: #f5e6c8;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 30px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .restart-btn:hover { background: #a02020; }
+    .restart-btn:active { transform: scale(0.98); }
+
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: #8a6030;
+      margin-top: 1.25rem;
+      letter-spacing: 0.04em;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e0c080;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-pattern">
+  <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="800" height="800" fill="#1a0e05"/>
+    <g opacity="0.18" fill="none" stroke="#c8963a" stroke-width="0.8">
+      <circle cx="400" cy="400" r="60"/><circle cx="400" cy="400" r="100"/>
+      <circle cx="400" cy="400" r="150"/><circle cx="400" cy="400" r="210"/>
+      <circle cx="400" cy="400" r="280"/><circle cx="400" cy="400" r="360"/>
+      <circle cx="400" cy="400" r="450"/>
+    </g>
+    <g opacity="0.12" fill="#c8963a">
+      <polygon points="400,320 412,348 442,348 419,365 428,394 400,377 372,394 381,365 358,348 388,348"/>
+      <polygon points="120,120 128,144 153,144 133,158 140,182 120,168 100,182 107,158 87,144 112,144"/>
+      <polygon points="680,120 688,144 713,144 693,158 700,182 680,168 660,182 667,158 647,144 672,144"/>
+      <polygon points="120,680 128,704 153,704 133,718 140,742 120,728 100,742 107,718 87,704 112,704"/>
+      <polygon points="680,680 688,704 713,704 693,718 700,742 680,728 660,742 667,718 647,704 672,704"/>
+    </g>
+    <g opacity="0.07" stroke="#8B1A1A" stroke-width="1" fill="none">
+      <path d="M0,200 Q200,180 400,200 T800,200"/>
+      <path d="M0,400 Q200,380 400,400 T800,400"/>
+      <path d="M0,600 Q200,580 400,600 T800,600"/>
+    </g>
+    <g opacity="0.1" fill="#1D6B3A">
+      <ellipse cx="100" cy="350" rx="18" ry="28" transform="rotate(-20,100,350)"/>
+      <ellipse cx="100" cy="350" rx="18" ry="28" transform="rotate(20,100,350)"/>
+      <rect x="97" y="350" width="6" height="35"/>
+      <ellipse cx="700" cy="350" rx="18" ry="28" transform="rotate(-20,700,350)"/>
+      <ellipse cx="700" cy="350" rx="18" ry="28" transform="rotate(20,700,350)"/>
+      <rect x="697" y="350" width="6" height="35"/>
+      <ellipse cx="400" cy="80" rx="14" ry="22" transform="rotate(-15,400,80)"/>
+      <ellipse cx="400" cy="80" rx="14" ry="22" transform="rotate(15,400,80)"/>
+      <rect x="397" y="80" width="5" height="28"/>
+    </g>
+  </svg>
+</div>
+
+<div class="main-wrap">
+  <div class="header-banner">
+    <span class="tec-tag">SE-1102 Acción Social · TEC 2026</span>
+    <h1>Ritmos de mi Tierra</h1>
+  </div>
+
+  <div class="card">
+    <svg class="corner-deco tl" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 Q5 5 55 5" stroke="#8B1A1A" stroke-width="2"/>
+      <path d="M5 45 Q5 5 45 5" stroke="#c8963a" stroke-width="1.5"/>
+      <circle cx="5" cy="55" r="3" fill="#8B1A1A"/>
+      <circle cx="55" cy="5" r="3" fill="#8B1A1A"/>
+    </svg>
+    <svg class="corner-deco tr" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 Q5 5 55 5" stroke="#8B1A1A" stroke-width="2"/>
+      <path d="M5 45 Q5 5 45 5" stroke="#c8963a" stroke-width="1.5"/>
+      <circle cx="5" cy="55" r="3" fill="#8B1A1A"/>
+      <circle cx="55" cy="5" r="3" fill="#8B1A1A"/>
+    </svg>
+    <svg class="corner-deco bl" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 Q5 5 55 5" stroke="#8B1A1A" stroke-width="2"/>
+      <path d="M5 45 Q5 5 45 5" stroke="#c8963a" stroke-width="1.5"/>
+      <circle cx="5" cy="55" r="3" fill="#8B1A1A"/>
+      <circle cx="55" cy="5" r="3" fill="#8B1A1A"/>
+    </svg>
+    <svg class="corner-deco br" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 Q5 5 55 5" stroke="#8B1A1A" stroke-width="2"/>
+      <path d="M5 45 Q5 5 45 5" stroke="#c8963a" stroke-width="1.5"/>
+      <circle cx="5" cy="55" r="3" fill="#8B1A1A"/>
+      <circle cx="55" cy="5" r="3" fill="#8B1A1A"/>
+    </svg>
+
+    <div id="start-screen" class="screen active">
+      <div class="start-hero">
+        <span class="folk-icon">🪘</span>
+        <h2>Desafío de Orígenes</h2>
+        <p>Pon a prueba tus conocimientos sobre los bailes folclóricos costarricenses.<br>10 preguntas · 20 segundos cada una.</p>
+        <div class="origin-tags">
+          <span class="origin-tag"><span class="dot" style="background:#8B1A1A"></span>Raíces indígenas</span>
+          <span class="origin-tag"><span class="dot" style="background:#c8963a"></span>Herencia española</span>
+          <span class="origin-tag"><span class="dot" style="background:#1D6B3A"></span>Ritmos afrocaribeños</span>
+        </div>
+        <button class="start-btn" onclick="startGame()">Comenzar desafío</button>
+      </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+      <div class="timer-wrap"><div class="timer-bar" id="timer-bar" style="width:100%; background:#1D6B3A;"></div></div>
+      <div class="question-num" id="q-num">Pregunta 1 de 10</div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Siguiente →</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+      <div class="score-card">
+        <div class="score-num" id="final-score"></div>
+        <div class="score-label">respuestas correctas de 10</div>
+        <div class="score-msg" id="score-msg"></div>
+      </div>
+      <div style="text-align:center">
+        <button class="restart-btn" onclick="restartGame()">Jugar de nuevo</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Taller Ritmos de mi Tierra &nbsp;·&nbsp; Escuela de Cultura y Deporte &nbsp;·&nbsp; TEC 2026</footer>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "¿De qué tres culturas se originaron los bailes folclóricos costarricenses?",
+    opts: ["Indígena, española y afrocaribeña", "Española, francesa y africana", "Maya, azteca y española", "Indígena, portuguesa y asiática"],
+    ans: 0,
+    exp: "Los bailes folclóricos nacieron de la fusión de danzas indígenas originarias, tradiciones españolas de la época colonial y ritmos africanos y caribeños."
+  },
+  {
+    q: "¿En qué provincia se originó el Punto Guanacasteco?",
+    opts: ["San José", "Limón", "Guanacaste", "Puntarenas"],
+    ans: 2,
+    exp: "El Punto Guanacasteco se desarrolló en Guanacaste, conocida por su cultura vaquera o sabanera, convirtiéndose en el baile más famoso de Costa Rica."
+  },
+  {
+    q: "¿En qué año fue declarado el swing criollo Patrimonio Cultural Inmaterial?",
+    opts: ["1999", "2005", "2011", "2018"],
+    ans: 2,
+    exp: "El swing criollo fue declarado Patrimonio Cultural Inmaterial en el año 2011."
+  },
+  {
+    q: "¿Qué baile se celebra en honor a la Virgen de Guadalupe en Nicoya?",
+    opts: ["El Tamborito", "La Danza de la Yegüita", "El Calipso", "El Punto"],
+    ans: 1,
+    exp: "La Danza de la Yegüita se celebra en Nicoya en honor a la Virgen de Guadalupe, reflejando el sincretismo entre creencias indígenas y la tradición católica."
+  },
+  {
+    q: "¿Cuáles son las cuatro zonas del folclor costarricense?",
+    opts: ["Alajuela, Cartago, Heredia y San José", "Guanacaste, Valle Central, Limón y Puntarenas", "Norte, Sur, Este y Oeste", "Caribe, Pacífico, Central y Norte"],
+    ans: 1,
+    exp: "Los bailes folclóricos se asocian a cuatro zonas principales: Guanacaste, el Valle Central, Limón y Puntarenas, cada una con su propia identidad cultural."
+  },
+  {
+    q: "¿Qué representa el movimiento del Punto Guanacasteco?",
+    opts: ["Un juego de cortejo entre el hombre y la mujer", "Una batalla entre guerreros", "Una danza religiosa en círculo", "Un saludo a los dioses indígenas"],
+    ans: 0,
+    exp: "El Punto Guanacasteco representa un juego de cortejo entre el hombre y la mujer, con movimientos elegantes y vestimenta tradicional como faldas amplias y coloridas."
+  },
+  {
+    q: "¿Cuál de estos es un grupo folclórico costarricense mencionado en el taller?",
+    opts: ["Ballet Nacional de Costa Rica", "Grupo Proyección Folclórica Flor de Tabaco", "Danza Contemporánea Tica", "Agrupación Rítmica Caribeña"],
+    ans: 1,
+    exp: "El Grupo Proyección Folclórica Flor de Tabaco es una de las agrupaciones dedicadas a la investigación, preservación y proyección del folclor costarricense."
+  },
+  {
+    q: "¿Qué elemento del vestuario tradicional se menciona en el taller?",
+    opts: ["Sombrero de paja toquilla", "Enaguas de colores y caites", "Capa española y botas", "Turbante y sandalias doradas"],
+    ans: 1,
+    exp: "Los trajes tradicionales incluyen elementos como enaguas de colores, caballitos, fajones, blusas, tocados, caites y trenzas."
+  },
+  {
+    q: "¿Qué agrupación folclórica nació en la Universidad de Costa Rica en 1975?",
+    opts: ["Ballet Folclórico Nacional", "Asociación de Bailes Costarricenses", "Grupo Güipipía", "Agrupación Kamuk"],
+    ans: 2,
+    exp: "El Grupo Güipipía de la UCR nació en 1975, como parte del movimiento de preservación del folclor que surgió entre 1950 y 1980."
+  },
+  {
+    q: "¿Cuál es el propósito principal del taller Ritmos de mi Tierra?",
+    opts: ["Enseñar a bailar el Punto Guanacasteco profesionalmente", "Promover la valoración del baile folclórico ante las nuevas generaciones", "Crear nuevos estilos de baile modernos", "Competir en festivales internacionales de folclor"],
+    ans: 1,
+    exp: "El propósito del taller es asegurar la valoración del baile folclórico y que se mantenga como una práctica vigente ante las nuevas generaciones."
+  }
+];
+
+const LETTERS = ['A','B','C','D'];
+let current = 0, score = 0, timer = null, timeLeft = 20;
+
+function startGame() {
+  current = 0; score = 0;
+  show('game-screen');
+  loadQuestion();
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function loadQuestion() {
+  const q = questions[current];
+  document.getElementById('q-num').textContent = `Pregunta ${current + 1} de ${questions.length}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('progress').style.width = `${(current / questions.length) * 100}%`;
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span>${o}`;
+    btn.onclick = () => selectAnswer(i);
+    opts.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function startTimer() {
+  timeLeft = 20;
+  clearInterval(timer);
+  updateTimerBar();
+  timer = setInterval(() => {
+    timeLeft -= 0.1;
+    updateTimerBar();
+    if (timeLeft <= 0) { clearInterval(timer); timeOut(); }
+  }, 100);
+}
+
+function updateTimerBar() {
+  const pct = Math.max(0, timeLeft / 20);
+  document.getElementById('timer-bar').style.width = `${pct * 100}%`;
+  document.getElementById('timer-bar').style.background = pct > 0.5 ? '#1D6B3A' : pct > 0.25 ? '#c8963a' : '#8B1A1A';
+}
+
+function timeOut() {
+  disableOptions();
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback wrong';
+  fb.textContent = `Tiempo agotado. La respuesta correcta era: "${questions[current].opts[questions[current].ans]}"`;
+  fb.style.display = 'block';
+  document.querySelectorAll('.opt-btn')[questions[current].ans].classList.add('correct');
+  document.getElementById('next-btn').style.display = 'inline-block';
+}
+
+function selectAnswer(i) {
+  clearInterval(timer);
+  disableOptions();
+  const q = questions[current];
+  const btns = document.querySelectorAll('.opt-btn');
+  const fb = document.getElementById('feedback');
+  if (i === q.ans) {
+    score++;
+    btns[i].classList.add('correct');
+    fb.className = 'feedback correct';
+    fb.textContent = `Correcto. ${q.exp}`;
+  } else {
+    btns[i].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    fb.className = 'feedback wrong';
+    fb.textContent = `Incorrecto. ${q.exp}`;
+  }
+  fb.style.display = 'block';
+  document.getElementById('next-btn').style.display = 'inline-block';
+}
+
+function disableOptions() {
+  document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResults();
+  else loadQuestion();
+}
+
+function showResults() {
+  document.getElementById('progress').style.width = '100%';
+  document.getElementById('final-score').textContent = `${score}/10`;
+  const msgs = [
+    [0, 3, "Sigue repasando el contenido del taller, ¡la próxima te va mejor!"],
+    [4, 6, "¡Buen intento! Ya conocés bastante sobre el folclor tico."],
+    [7, 8, "¡Muy bien! Dominás los orígenes del baile folclórico costarricense."],
+    [9, 10, "¡Excelente! Sos un experto en los orígenes del folclor costarricense."]
+  ];
+  const msg = msgs.find(([min, max]) => score >= min && score <= max);
+  document.getElementById('score-msg').textContent = msg[2];
+  show('result-screen');
+}
+
+function restartGame() { startGame(); }
+</script>
+</body>
+</html>
